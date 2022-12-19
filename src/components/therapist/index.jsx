@@ -13,12 +13,7 @@ export default function Therapist() {
             link={`/${session.user.email}/video`}
           />
         </div>
-        {/* <div className="col-lg-3 col-md-3 col-sm-6 col-6">
-          <AppTile
-            icon={<h4>3D Call</h4>}
-            link={`/${session.user.email}/3dCall`}
-          />
-        </div> */}
+
         <div className="col-lg-3 col-md-3 col-sm-6 col-6">
           <AppTile
             icon={<h4>2D Call</h4>}
