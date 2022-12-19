@@ -1,3 +1,4 @@
+/* eslint-disable */
 import styles from "../../../styles/Video.module.css";
 import Table from "../../../components/customTable/table";
 import Thead from "../../../components/customTable/tHead";
