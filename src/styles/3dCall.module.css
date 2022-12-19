@@ -1,0 +1,75 @@
+.selectContainer3d {
+  width: 90vw;
+  height: 80vh;
+}
+.selectContainer {
+  margin: 20px;
+  width: 100%;
+}
+
+.actionBtn {
+  background-color: #19a6f4;
+  color: #ffffff;
+}
+
+.actionBtn:hover {
+  background-color: #19a6f4;
+  color: #ffffff;
+}
+
+.actionBtnSelected {
+  background-color: #f34982;
+  color: #ffffff;
+}
+
+.actionBtnSelected:hover {
+  background-color: #f34982;
+  color: #ffffff;
+}
+
+.remoteVideoContainer {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.remoteVideoContainer video {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #222;
+}
+.input_video {
+  max-width: 400px;
+  height: auto;
+  transform: scale(-1, 1);
+}
+.preview canvas {
+  transform: scale(-1, 1);
+}
+
+.preview canvas {
+  display: block;
+}
+.guides {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: auto;
+  width: 100%;
+  z-index: 1;
+}

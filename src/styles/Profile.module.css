@@ -1,0 +1,66 @@
+.profileContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profileCard {
+  width: 50%;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: width 0.5s;
+}
+
+.profileCard h4 {
+  color: #1a1a1a;
+}
+
+.profileCard h5 {
+  color: #aaa9a9;
+}
+
+.profileCard hr {
+  width: 100%;
+  color: #7c28dd;
+}
+
+.profileCard select {
+  width: 50%;
+  background-color: #aaa9a9;
+  color: #ffffff;
+  border-color: #7c28dd;
+  transition: 1s;
+}
+
+.imageContainerProfile {
+  width: auto;
+  height: auto;
+  border-style: solid;
+  padding: 10px;
+  border-radius: 50%;
+  border-color: #7c28dd;
+}
+
+.imageCustom {
+  border-radius: 50%;
+}
+
+.logOutBtn {
+  background-color: #f34982;
+  width: 50%;
+  color: #ffffff;
+}
+
+.logOutBtn:hover {
+  background-color: #f06a97;
+  color: #ffffff;
+}
+
+@media screen and (min-width: 0px) and (max-width: 768px) {
+  .profileCard {
+    width: 100%;
+    transition: width 0.5s;
+  }
+}

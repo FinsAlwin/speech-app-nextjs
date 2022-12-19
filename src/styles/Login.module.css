@@ -1,0 +1,11 @@
+.loginBox {
+  position: absolute;
+  width: 50vh;
+  top: 10vh;
+  bottom: 10vh;
+  right: 5vh;
+  background-color: #7c28dd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

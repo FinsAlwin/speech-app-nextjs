@@ -1,0 +1,17 @@
+.appTileContainer {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #19a6f4;
+  color: #ffffff;
+  border-radius: 20%;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.appTileContainer:hover {
+  box-shadow: 20px 20px 50px #aaa9a9;
+  color: #ffffff;
+}

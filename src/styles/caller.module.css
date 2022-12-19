@@ -1,0 +1,61 @@
+.callContainer {
+  padding: 20px;
+  position: absolute;
+  align-self: center;
+  border-radius: 22px;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.imageContainer {
+  width: auto;
+  height: auto;
+  border-style: solid;
+  padding: 10px;
+  border-radius: 50%;
+  border-color: #7c28dd;
+}
+
+.imageCustom {
+  border-radius: 50%;
+}
+
+.callContainer h4 {
+  padding: 10px;
+}
+
+.btnContainer {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btnAnswer {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border-style: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #75cd36;
+  color: #ffffff;
+}
+
+.btnDecline {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border-style: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modalContent {
+  border: none !important;
+  top: 25vh;
+}

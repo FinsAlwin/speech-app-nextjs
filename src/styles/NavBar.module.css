@@ -1,0 +1,131 @@
+.navBar {
+  background-color: #7c28dd;
+}
+
+.logo {
+  color: #ffffff;
+  border-style: solid;
+  border-radius: 12px;
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bolder;
+}
+
+.logo a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.profile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatarContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-style: solid;
+  border-radius: 50%;
+  border-color: #ffffff;
+  cursor: pointer;
+}
+
+.avatarImage {
+  padding: 5px;
+  border-radius: 50%;
+}
+
+.drawerContainer {
+  height: 0;
+  top: 20vh;
+  left: 25vw;
+  width: 50%;
+  bottom: 20vh;
+  position: absolute;
+  transition: height 1s;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.slider {
+  height: 60vh;
+}
+
+.closeBtn {
+  width: 100%;
+  padding-top: 1%;
+  padding-right: 2%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.profileCard {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profileCard h4 {
+  color: #1a1a1a;
+}
+
+.profileCard h5 {
+  color: #aaa9a9;
+}
+
+.profileCard hr {
+  width: 100%;
+  color: #7c28dd;
+}
+
+.imageContainerProfile {
+  width: auto;
+  height: auto;
+  border-style: solid;
+  padding: 10px;
+  border-radius: 50%;
+  border-color: #7c28dd;
+}
+
+.imageCustom {
+  border-radius: 50%;
+}
+
+.logOutBtn {
+  background-color: #f34982;
+  width: 50%;
+  color: #ffffff;
+}
+
+.logOutBtn:hover {
+  background-color: #f06a97;
+  color: #ffffff;
+}
+
+@media screen and (min-width: 0px) and (max-width: 768px) {
+  .drawerContainer {
+    height: 0;
+    top: 20vh;
+    left: 0;
+    width: 100vw;
+    bottom: 20vh;
+    transition: height 1s;
+  }
+
+  .slider {
+    height: 60vh;
+  }
+}

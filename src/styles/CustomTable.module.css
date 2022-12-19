@@ -1,0 +1,18 @@
+.customTable {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.customTh {
+  padding: 10px;
+  width: 20px;
+}
+
+.customTd {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.customTd:hover {
+}

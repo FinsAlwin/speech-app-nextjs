@@ -1,0 +1,45 @@
+.leftTrayContainer {
+  position: absolute;
+  top: 2vh;
+  left: 1vw;
+  bottom: 2vh;
+  width: 5vw;
+  background-color: #d4d3d1;
+  border-radius: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.item {
+  height: 100px;
+  background-color: #d4d3d1;
+  cursor: pointer;
+  color: black;
+  position: relative;
+}
+
+.menuItem {
+  position: absolute;
+  left: 3vw;
+  width: 15vw;
+  height: 50px;
+  background-color: #d4d3d1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menuItem ul li {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media screen and (min-width: 0px) and (max-width: 768px) {
+  .leftTrayContainer {
+    display: none;
+  }
+}
