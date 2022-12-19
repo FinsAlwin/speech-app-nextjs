@@ -5,7 +5,7 @@ import Thead from "../../../components/customTable/tHead";
 import Th from "../../../components/customTable/th";
 import Tr from "../../../components/customTable/tr";
 import Tbody from "../../../components/customTable/tBody";
-import Td from "../../../components/customTable/Td";
+import Td from "../../../components/customTable/td";
 import { getSession, useSession } from "next-auth/react";
 import Layout from "../../../components/layout/layout";
 import useSWR from "swr";
