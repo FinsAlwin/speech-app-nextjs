@@ -12,20 +12,6 @@ import { VRMLoaderPlugin } from "@pixiv/three-vrm";
 export default function Threed(props) {
   const remoteCameraRef = useRef(null);
   const canvasRef = useRef(null);
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: false })
-      .then(async function (stream) {
-        remoteCameraRef.current.srcObject = stream;
-        remoteCameraRef.current.play();
-      })
-      .then(async function () {
-        runNN();
-      })
-      .catch(function (err) {
-        console.log("An error occurred! " + err);
-      });
-  }, []);
 
   const runNN = () => {
     const holistic = new Holistic({
