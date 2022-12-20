@@ -7,6 +7,8 @@ import Therapist from "./../../components/therapist/index";
 import Patient from "./../../components/patient/index";
 import Layout from "../../components/layout/layout";
 import { useEffect, useState } from "react";
+import { getMessaging, onMessage } from "firebase/messaging";
+import { firebaseCloudMessaging } from "../../utils/firebase";
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
@@ -21,6 +23,41 @@ export default function Home(props) {
   useEffect(() => {
     localStorage.setItem("userData", JSON.stringify(data));
   }, [data]);
+
+  useEffect(() => {
+    setToken();
+
+    // Event listener that listens for the push notification event in the background
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("message", (event) => {
+        console.log(
+          "event for the service worker",
+          event.data.firebaseMessaging.payload
+        );
+      });
+    }
+
+    // Calls the getMessage() function if the token is there
+    async function setToken() {
+      try {
+        const token = await firebaseCloudMessaging.init();
+        if (token) {
+          console.log("token", token);
+          getMessage();
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    function getMessage() {
+      const messaging = getMessaging();
+
+      onMessage(messaging, (payload) => {
+        console.log(payload);
+      });
+    }
+  }, []);
 
   return (
     <Layout>
