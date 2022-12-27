@@ -4,37 +4,39 @@ import "firebase/messaging";
 let messaging;
 
 if (!firebase.apps.length) {
-  if (Notification.permission === "granted") {
-    const firebaseConfig = {
-      apiKey: "AIzaSyDszCyTtKj33PBCZpWGp6nCQ8IXTrj40o4",
-      authDomain: "speech-app-369303.firebaseapp.com",
-      projectId: "speech-app-369303",
-      storageBucket: "speech-app-369303.appspot.com",
-      messagingSenderId: "1078826179614",
-      appId: "1:1078826179614:web:8a641d0389cd55a624e20f",
-    };
+  if (typeof Notification !== "undefined") {
+    if (Notification.permission === "granted") {
+      const firebaseConfig = {
+        apiKey: "AIzaSyDszCyTtKj33PBCZpWGp6nCQ8IXTrj40o4",
+        authDomain: "speech-app-369303.firebaseapp.com",
+        projectId: "speech-app-369303",
+        storageBucket: "speech-app-369303.appspot.com",
+        messagingSenderId: "1078826179614",
+        appId: "1:1078826179614:web:8a641d0389cd55a624e20f",
+      };
 
-    firebase.initializeApp(firebaseConfig);
+      firebase.initializeApp(firebaseConfig);
 
-    messaging = firebase.messaging();
-  } else if (Notification.permission !== "denied") {
-    Notification.requestPermission().then((permission) => {
-      // If the user accepts, let's create a notification
-      if (permission === "granted") {
-        const firebaseConfig = {
-          apiKey: "AIzaSyDszCyTtKj33PBCZpWGp6nCQ8IXTrj40o4",
-          authDomain: "speech-app-369303.firebaseapp.com",
-          projectId: "speech-app-369303",
-          storageBucket: "speech-app-369303.appspot.com",
-          messagingSenderId: "1078826179614",
-          appId: "1:1078826179614:web:8a641d0389cd55a624e20f",
-        };
+      messaging = firebase.messaging();
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then((permission) => {
+        // If the user accepts, let's create a notification
+        if (permission === "granted") {
+          const firebaseConfig = {
+            apiKey: "AIzaSyDszCyTtKj33PBCZpWGp6nCQ8IXTrj40o4",
+            authDomain: "speech-app-369303.firebaseapp.com",
+            projectId: "speech-app-369303",
+            storageBucket: "speech-app-369303.appspot.com",
+            messagingSenderId: "1078826179614",
+            appId: "1:1078826179614:web:8a641d0389cd55a624e20f",
+          };
 
-        firebase.initializeApp(firebaseConfig);
+          firebase.initializeApp(firebaseConfig);
 
-        messaging = firebase.messaging();
-      }
-    });
+          messaging = firebase.messaging();
+        }
+      });
+    }
   }
 }
 
