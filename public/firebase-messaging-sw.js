@@ -1,5 +1,6 @@
-importScripts("https://www.gstatic.com/firebasejs/7.9.1/firebase-app.js");
-importScripts("https://www.gstatic.com/firebasejs/7.9.1/firebase-messaging.js");
+importScripts("https://www.gstatic.com/firebasejs/8.2.0/firebase-app.js");
+
+importScripts("https://www.gstatic.com/firebasejs/8.2.0/firebase-messaging.js");
 
 firebase.initializeApp({
   apiKey: "AIzaSyDszCyTtKj33PBCZpWGp6nCQ8IXTrj40o4",
@@ -17,7 +18,7 @@ const messaging = firebase.messaging();
 // //background notifications will be received here
 messaging.setBackgroundMessageHandler(function (payload) {
   console.log("Received background message ", payload);
-  // Customize notification here
+
   const notificationTitle = "Background Message Title";
   const notificationOptions = {
     body: "Background Message body.",
@@ -30,16 +31,27 @@ messaging.setBackgroundMessageHandler(function (payload) {
   );
 });
 
-// messaging.onBackgroundMessage(function (payload) {
-//   // console.log("Received background message ", payload);
-//   const notificationTitle = "Background Message Title";
-//   const notificationOptions = {
-//     body: "Background Message body.",
-//     icon: "/firebase-logo.png",
-//   };
+messaging.onBackgroundMessage(function (payload) {
+  console.log("Received background message ", payload);
+  const notificationTitle = "Background Message Title";
+  const notificationOptions = {
+    body: "Background Message body.",
+    icon: "/firebase-logo.png",
+  };
 
-//   return self.registration.showNotification(
-//     notificationTitle,
-//     notificationOptions
-//   );
-// });
+  return self.registration.showNotification(
+    notificationTitle,
+    notificationOptions
+  );
+});
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .register("../firebase-messaging-sw.js")
+    .then(function (registration) {
+      console.log("Registration successful, scope is:", registration.scope);
+    })
+    .catch(function (err) {
+      console.log("Service worker registration failed, error:", err);
+    });
+}

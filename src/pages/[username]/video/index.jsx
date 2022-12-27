@@ -11,17 +11,18 @@ import Layout from "../../../components/layout/layout";
 import useSWR from "swr";
 import { useRouter } from "next/router";
 import Button from "../../../components/button/button";
-import io from "socket.io-client";
 import { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
+import PushNotificationLayout from "../../../components/PushNotificationLayout";
 import Image from "next/image";
-let socket;
+
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
 export default function Video() {
   const [show, setShow] = useState(false);
   const [callStatus, setCallStatus] = useState("");
   const [recipient, setRecipient] = useState();
+  const [userData, setUserData] = useState();
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -33,46 +34,32 @@ export default function Video() {
   const { data, error } = useSWR(`/api/${username}/getPatients`, fetcher);
 
   useEffect(() => {
-    socketInitializer();
-  }, []);
-
-  const socketInitializer = async () => {
-    await fetch("/api/socket");
-    socket = io();
-
-    socket.on("connect", () => {
-      console.log("connected");
-    });
-
-    socket.on("inComingCallResponse", (msg) => {
-      const payload = JSON.parse(msg);
-
-      if (payload.isAccepted === true) {
-        setCallStatus("Call Connected...");
-        setTimeout(() => {
-          router.push(`/${username}/video/${payload.roomName}`);
-        }, 1000);
-      } else if (payload.isAccepted === false) {
-        setCallStatus("Call Declined...");
-        setTimeout(callDeclined, 1000);
-      }
-    });
-  };
+    setUserData(localStorage.getItem("userData"));
+  });
 
   const callDeclined = () => {
     setShow(false);
     setRecipient();
   };
 
-  const handleAction = async (e, f, g) => {
+  const handleAction = async (e, f, g, h) => {
     const randomName = makeid(6);
 
     const payload = JSON.stringify({
-      userId: e,
-      callType: "video",
-      callerName: session.user.name,
-      callerImage: session.user.image,
-      roomName: randomName,
+      to: h,
+      priority: "high",
+      notification: {
+        title: "Call Placed",
+        body: "Video Call Request",
+      },
+      data: {
+        userId: e,
+        callType: "video",
+        callerName: session.user.name,
+        callerImage: session.user.image,
+        roomName: randomName,
+        senderFcmToken: JSON.parse(userData).fcmToken,
+      },
     });
 
     setShow(true);
@@ -81,7 +68,14 @@ export default function Video() {
 
     setRecipient({ id: e, name: f, image: g });
 
-    socket.emit("createdMessage", payload);
+    await fetch(`https://fcm.googleapis.com/fcm/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `key=${process.env.NEXT_PUBLIC_FIREBASE_SERVER_KEY}`,
+      },
+      body: payload,
+    });
   };
 
   function makeid(length) {
@@ -97,69 +91,76 @@ export default function Video() {
 
   return (
     <>
-      <Layout>
-        <Modal
-          show={show}
-          onHide={handleClose}
-          animation={true}
-          contentClassName={styles.modalContent}
-        >
-          {recipient && (
-            <div className={`${styles.callContainer} card shadow`}>
-              <h4>{callStatus}</h4>
-              {recipient.image && (
-                <div className={`${styles.imageContainer} shadow-lg`}>
-                  <Image
-                    className={`${styles.imageCustom}`}
-                    alt="Picture of the user"
-                    width={80}
-                    height={80}
-                    src={`${recipient.image}`}
-                    unoptimized
-                    priority={true}
-                  />
-                </div>
-              )}
-              <h4>{recipient.name}</h4>
-              <span className="badge bg-dark">Video Call</span>
+      <PushNotificationLayout>
+        <Layout>
+          <Modal
+            show={show}
+            onHide={handleClose}
+            animation={true}
+            contentClassName={styles.modalContent}
+          >
+            {recipient && (
+              <div className={`${styles.callContainer} card shadow`}>
+                <h4>{callStatus}</h4>
+                {recipient.image && (
+                  <div className={`${styles.imageContainer} shadow-lg`}>
+                    <Image
+                      className={`${styles.imageCustom}`}
+                      alt="Picture of the user"
+                      width={80}
+                      height={80}
+                      src={`${recipient.image}`}
+                      unoptimized
+                      priority={true}
+                    />
+                  </div>
+                )}
+                <h4>{recipient.name}</h4>
+                <span className="badge bg-dark">Video Call</span>
+              </div>
+            )}
+          </Modal>
+          {data && (
+            <div className="container shadow-lg rounded">
+              <div className={`${styles.selectContainer}`}>
+                <Table>
+                  <Thead>
+                    <Tr>
+                      <Th title="Name" />
+                      <Th title="Email" />
+                      <Th title="Action" />
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {data.map((item, index) => (
+                      <Tr key={index}>
+                        <Td title={item.name} />
+                        <Td title={item.email} />
+                        <Td
+                          title={
+                            <Button
+                              title="Create Session"
+                              style={styles.actionBtn}
+                              handleClick={() =>
+                                handleAction(
+                                  item.id,
+                                  item.name,
+                                  item.image,
+                                  item.fcmToken
+                                )
+                              }
+                            />
+                          }
+                        />
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </div>
             </div>
           )}
-        </Modal>
-        {data && (
-          <div className="container shadow-lg rounded">
-            <div className={`${styles.selectContainer}`}>
-              <Table>
-                <Thead>
-                  <Tr>
-                    <Th title="Name" />
-                    <Th title="Email" />
-                    <Th title="Action" />
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {data.map((item, index) => (
-                    <Tr key={index}>
-                      <Td title={item.name} />
-                      <Td title={item.email} />
-                      <Td
-                        title={
-                          <Button
-                            title="Create Session"
-                            style={styles.actionBtn}
-                            handleClick={() =>
-                              handleAction(item.id, item.name, item.image)
-                            }
-                          />
-                        }
-                      />
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </div>
-          </div>
-        )}
-      </Layout>
+        </Layout>
+      </PushNotificationLayout>
     </>
   );
 }

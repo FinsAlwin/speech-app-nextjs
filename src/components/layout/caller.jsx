@@ -6,6 +6,7 @@ import { Modal } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import io from "socket.io-client";
 import { useRouter } from "next/router";
+
 let socket;
 
 export default function Caller(props) {
@@ -17,41 +18,99 @@ export default function Caller(props) {
   const handleShow = () => setShow(true);
 
   const handleAnswerCall = async () => {
-    await fetch("/api/socket");
-    socket = io();
+    const payload = JSON.stringify({
+      to: props.senderFcm,
+      priority: "high",
+      notification: {
+        title: "Call Response",
+        body: "Video Call Response",
+      },
+      data: {
+        isAccepted: true,
+        roomName: props.roomName,
+        url: `video/${props.roomName}`,
+      },
+    });
 
-    const payload = {
-      isAccepted: true,
-      roomName: props.roomName,
-    };
-    await socket.emit("callResponse", JSON.stringify(payload));
-    router.push(`/${username}/video/${props.roomName}`);
+    const sendNotification = await fetch(
+      `https://fcm.googleapis.com/fcm/send`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `key=${process.env.NEXT_PUBLIC_FIREBASE_SERVER_KEY}`,
+        },
+        body: payload,
+      }
+    );
+
+    if (sendNotification) {
+      router.push(`/${username}/video/${props.roomName}`);
+    }
   };
 
   const handleAnswerCall2D = async () => {
-    await fetch("/api/socket");
-    socket = io();
+    const payload = JSON.stringify({
+      to: props.senderFcm,
+      priority: "high",
+      notification: {
+        title: "Call Response",
+        body: "2d Call Response",
+      },
+      data: {
+        isAccepted: true,
+        roomName: props.roomName,
+        url: `2dCall/${props.roomName}`,
+      },
+    });
 
-    const payload = {
-      isAccepted: true,
-      roomName: props.roomName,
-      uid: props.uid,
-    };
-    await socket.emit("callResponse", JSON.stringify(payload));
-    router.push(`/${username}/2dCall/${props.roomName}`);
+    const sendNotification = await fetch(
+      `https://fcm.googleapis.com/fcm/send`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `key=${process.env.NEXT_PUBLIC_FIREBASE_SERVER_KEY}`,
+        },
+        body: payload,
+      }
+    );
+
+    if (sendNotification) {
+      router.push(`/${username}/2dCall/${props.roomName}`);
+    }
   };
 
   const handleRejectCall = async () => {
-    await fetch("/api/socket");
-    socket = io();
-    const payload = {
-      isAccepted: false,
-      roomName: props.roomName,
-      uid: props.uid,
-    };
+    const payload = JSON.stringify({
+      to: props.senderFcm,
+      priority: "high",
+      notification: {
+        title: "Call Response",
+        body: "Call rejected",
+      },
+      data: {
+        isAccepted: true,
+        roomName: props.roomName,
+        uid: props.uid,
+      },
+    });
 
-    socket.emit("callResponse", JSON.stringify(payload));
-    props.callActive(false);
+    const sendNotification = await fetch(
+      `https://fcm.googleapis.com/fcm/send`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `key=${process.env.NEXT_PUBLIC_FIREBASE_SERVER_KEY}`,
+        },
+        body: payload,
+      }
+    );
+
+    if (sendNotification) {
+      props.callActive(false);
+    }
   };
 
   return (

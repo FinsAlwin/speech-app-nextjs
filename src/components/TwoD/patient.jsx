@@ -4,10 +4,8 @@ import { useRouter } from "next/router";
 import { connect } from "twilio-video";
 import BottomTray from "../iconTray/bottomTray";
 import { Fireworks } from "@fireworks-js/react";
-import io from "socket.io-client";
-let socket;
 
-export default function TwoDCallPatient() {
+export default function TwoDCallPatient(props) {
   const [active, setActive] = useState(false);
 
   const [isRemoteActive, setIsRemoteActive] = useState(false);
@@ -38,6 +36,11 @@ export default function TwoDCallPatient() {
       getToken();
     }
   }, [active]);
+
+  useEffect(() => {
+    setFirework(props.reinforcement);
+    console.log(props.reinforcement);
+  }, [props.reinforcement]);
 
   useEffect(() => {
     if (isRemoteActive) {
@@ -338,31 +341,12 @@ export default function TwoDCallPatient() {
   }
 
   useEffect(() => {
-    socketInitializer();
-  }, []);
-
-  useEffect(() => {
     if (firework) {
       setTimeout(() => {
         setFirework(false);
       }, 10000);
     }
   }, [firework]);
-
-  const socketInitializer = async () => {
-    await fetch("/api/socket");
-    socket = io();
-
-    socket.on("congratsRes", (msg) => {
-      const payload = JSON.parse(msg);
-      if (
-        payload?.reinforcement &&
-        payload?.userId == JSON.parse(userData).id
-      ) {
-        setFirework(true);
-      }
-    });
-  };
 
   return (
     <>

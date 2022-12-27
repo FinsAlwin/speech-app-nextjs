@@ -33,6 +33,7 @@ export default function Profile({ data, userType }) {
   };
 
   const handleLogOut = () => {
+    localStorage.clear();
     signOut();
   };
   return (

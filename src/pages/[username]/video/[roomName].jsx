@@ -61,22 +61,24 @@ export default function VideoSession() {
   }
 
   async function getToken() {
-    const payload = {
-      identity: username,
-    };
-    const res = await fetch(`/api/${username}/getToken`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    if (username) {
+      const payload = {
+        identity: username,
+      };
+      const res = await fetch(`/api/${username}/getToken`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-    const dataRes = await res.json();
+      const dataRes = await res.json();
 
-    if (res.status == 200) {
-      await localStorage.setItem("tiToken", dataRes.data);
-      setActive(true);
+      if (res.status == 200) {
+        await localStorage.setItem("tiToken", dataRes.data);
+        setActive(true);
+      }
     }
   }
 

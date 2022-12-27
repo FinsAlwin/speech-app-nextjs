@@ -1,53 +1,96 @@
-import React, { useEffect } from "react";
-import { getMessaging, onMessage } from "firebase/messaging";
-import { firebaseCloudMessaging } from "../utils/firebase";
+import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { useRouter } from "next/router";
-import { onBackgroundMessage } from "firebase/messaging/sw";
+import { onMessageListener } from "../utils/firebase";
+import Caller from "./layout/caller";
+import styles from "../styles/caller.module.css";
+import { BiPhoneCall } from "react-icons/bi";
+import { FcEndCall } from "react-icons/fc";
 
-function PushNotificationLayout({ children }) {
+function PushNotificationLayout({ children, handlereinforcement }) {
+  const [callActive, setCallActive] = useState(false);
+  const [callType, setCallType] = useState("");
+  const [callerName, setCallerName] = useState("");
+  const [callerImage, setCallerImage] = useState("");
+  const [roomName, setRoomName] = useState("");
+  const [uid, setUid] = useState();
+  const [senderFcm, setSenderFcm] = useState();
+  const [callAccepted, setCallAccepted] = useState();
   const router = useRouter();
+  const { username } = router.query;
+
+  const handleAnswerCall = (e) => {};
+
+  const handleRejectCall = (e) => {};
+
+  const handleAnswerCall2D = (e) => {};
+
   useEffect(() => {
-    setToken();
+    onMessageListener()
+      .then((payload) => {
+        if (payload.data) {
+          if (payload.notification.title.includes("Call Placed")) {
+            setCallActive(true);
+            setCallType(payload.data.callType);
+            setCallerName(payload.data.callerName);
+            setCallerImage(payload.data.callerImage);
+            setRoomName(payload.data.roomName);
+            setUid(payload.data.userId);
+            setSenderFcm(payload.data.senderFcmToken);
 
-    // Event listener that listens for the push notification event in the background
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.addEventListener("message", (event) => {
-        console.log("event for the service worker", event);
-      });
-    }
+            const detailes = {
+              callerName: payload.data.callerName,
+              callType: payload.data.callType,
+              backgroundImagesUrl: payload.data.backgroundImagesUrl,
+              modelUrl: payload.data.modelUrl,
+            };
 
-    // Calls the getMessage() function if the token is there
-    async function setToken() {
-      try {
-        const token = await firebaseCloudMessaging.init();
-        if (token) {
-          console.log("token", token);
-          getMessage();
+            localStorage.setItem("callDetailes", JSON.stringify(detailes));
+          } else if (payload.notification.title.includes("Call Response")) {
+            if (payload.data.isAccepted) {
+              setCallActive(false);
+              setCallType(payload.data.callType);
+              setCallerName(payload.data.callerName);
+              setCallerImage(payload.data.callerImage);
+              setRoomName(payload.data.roomName);
+              setUid(payload.data.userId);
+              setSenderFcm(payload.data.senderFcmToken);
+              const detailes = {
+                callerName: payload.data.callerName,
+                callType: payload.data.callType,
+                backgroundImagesUrl: payload.data.backgroundImagesUrl,
+                modelUrl: payload.data.modelUrl,
+              };
+
+              localStorage.setItem("callDetailes", JSON.stringify(detailes));
+              router.push(`/${username}/${payload.data.url}`);
+            }
+          } else if (payload.notification.title.includes("reinforcement")) {
+            handlereinforcement(payload.data.reinforcement);
+          }
         }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  });
+      })
+      .catch();
+  }, []);
 
-  // Handles the click function on the toast showing push notification
-  const handleClickPushNotification = (url) => {
-    router.push(url);
-  };
-
-  // Get the push notification message and triggers a toast to display it
-  function getMessage() {
-    const messaging = getMessaging();
-
-    onMessage(messaging, (payload) => {
-      console.log(payload);
-    });
-  }
+  const handleCallActive = () => {};
 
   return (
     <>
       <ToastContainer />
+      {callActive && (
+        <Caller
+          roomName={roomName}
+          uid={uid}
+          callType={callType}
+          callerName={callerName}
+          callerImage={callerImage}
+          show={callActive}
+          callActive={handleCallActive}
+          senderFcm={senderFcm}
+        />
+      )}
+
       {children}
     </>
   );

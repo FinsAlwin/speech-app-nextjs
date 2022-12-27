@@ -21,6 +21,7 @@ export default function NavBar() {
 
   const handleLogOut = () => {
     signOut();
+    localStorage.clear();
   };
   return (
     <>

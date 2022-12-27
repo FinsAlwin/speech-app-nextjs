@@ -2,14 +2,17 @@ import styles from "../../../styles/2dCall.module.css";
 import { HiThumbUp, HiEye } from "react-icons/hi";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import io from "socket.io-client";
-let socket;
 
 export default function Tools(props) {
+  const [userData, setUserData] = useState();
   const router = useRouter();
   const { uid } = router.query;
   const [time, setTime] = useState(0);
   let interval = null;
+
+  useEffect(() => {
+    setUserData(JSON.parse(localStorage.getItem("userData")));
+  }, []);
 
   useEffect(() => {
     if (props.isFace) {
@@ -24,23 +27,29 @@ export default function Tools(props) {
     };
   });
 
-  useEffect(() => {
-    socketInitializer();
-  }, []);
-
-  const socketInitializer = async () => {
-    await fetch("/api/socket");
-    socket = io();
-  };
-
-  const handleCongratulations = () => {
+  const handleCongratulations = async () => {
     const payload = JSON.stringify({
-      userId: uid,
-      callType: "2d",
-      reinforcement: true,
+      to: localStorage.getItem("peerFcmToken"),
+      priority: "high",
+      notification: {
+        title: "reinforcement",
+        body: "reinforcement request",
+      },
+      data: {
+        callType: "2d",
+        reinforcement: true,
+        senderFcmToken: userData.fcmToken,
+      },
     });
 
-    socket.emit("congratsSend", payload);
+    await fetch(`https://fcm.googleapis.com/fcm/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `key=${process.env.NEXT_PUBLIC_FIREBASE_SERVER_KEY}`,
+      },
+      body: payload,
+    });
   };
 
   return (

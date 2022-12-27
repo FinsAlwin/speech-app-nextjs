@@ -10,11 +10,10 @@ import { getSession, useSession } from "next-auth/react";
 import useSWR from "swr";
 import { useRouter } from "next/router";
 import Button from "../../../components/button/button";
-import io from "socket.io-client";
 import { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import Image from "next/image";
-let socket;
+import PushNotificationLayout from "../../../components/PushNotificationLayout";
 
 export default function TwoDCall() {
   const [show, setShow] = useState(false);
@@ -28,6 +27,7 @@ export default function TwoDCall() {
   const [isSelected, setIsSelected] = useState();
   const [isBgSelected, setIsBgSelected] = useState();
   const [isModelSelected, setIsModelSelected] = useState();
+  const [fcmToken, setFcmToken] = useState("");
   const router = useRouter();
   const { username } = router.query;
   const { data: session, status } = useSession();
@@ -60,49 +60,16 @@ export default function TwoDCall() {
   }
 
   useEffect(() => {
-    socketInitializer();
     setUserData(JSON.parse(localStorage.getItem("userData")));
   }, []);
-
-  const socketInitializer = async () => {
-    await fetch("/api/socket");
-    socket = io();
-
-    socket.on("connect", () => {
-      console.log("connected");
-    });
-
-    socket.on("inComingCallResponse", (msg) => {
-      const payload = JSON.parse(msg);
-
-      console.log(payload.uid);
-
-      if (payload.isAccepted === true) {
-        setCallStatus("Call Connected...");
-        setTimeout(() => {
-          router.push(
-            `/${username}/2dCall/${payload.roomName}?uid=${payload.uid}`
-          );
-        }, 1000);
-      } else if (payload.isAccepted === false) {
-        setCallStatus("Call Declined...");
-        setTimeout(callDeclined, 1000);
-      }
-    });
-
-    socket.on("congratsRes", (msg) => {
-      const payload = JSON.parse(msg);
-
-      console.log(payload);
-    });
-  };
 
   const callDeclined = () => {
     setShow(false);
     setRecipient();
   };
 
-  const handleAction = async (e, f, g) => {
+  const handleAction = async (e, f, g, h) => {
+    setFcmToken(h);
     if (isSelected == e) {
       setIsSelected();
     } else {
@@ -128,166 +95,194 @@ export default function TwoDCall() {
 
   const handleCreateSession = async () => {
     const randomName = makeid(6);
+
     const payload = JSON.stringify({
-      userId: isSelected,
-      callType: "2d",
-      callerName: session.user.name,
-      callerImage: session.user.image,
-      roomName: randomName,
-      backgroundImagesUrl: isBgSelected.backgroundImageUrl,
-      modelUrl: isModelSelected.modelUrl,
+      to: fcmToken,
+      priority: "high",
+      notification: {
+        title: "Call Placed",
+        body: "2D Call Request",
+      },
+      data: {
+        userId: isSelected,
+        callType: "2d",
+        callerName: session.user.name,
+        callerImage: session.user.image,
+        roomName: randomName,
+        backgroundImagesUrl: isBgSelected.backgroundImageUrl,
+        modelUrl: isModelSelected.modelUrl,
+        roomName: randomName,
+        senderFcmToken: userData.fcmToken,
+      },
     });
+
+    await fetch(`https://fcm.googleapis.com/fcm/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `key=${process.env.NEXT_PUBLIC_FIREBASE_SERVER_KEY}`,
+      },
+      body: payload,
+    });
+
     setShow(true);
     setCallStatus("Connecting...");
-    socket.emit("createdMessage", payload);
+    localStorage.setItem("peerFcmToken", fcmToken);
   };
 
   return (
-    <Layout>
-      <Modal
-        show={show}
-        onHide={handleClose}
-        animation={true}
-        contentClassName={styles.modalContent}
-      >
-        {recipient && (
-          <div className={`${styles.callContainer} card shadow`}>
-            <h4>{callStatus}</h4>
-            {recipient.image && (
-              <div className={`${styles.imageContainer} shadow-lg`}>
-                <Image
-                  className={`${styles.imageCustom}`}
-                  alt="Picture of the user"
-                  width={80}
-                  height={80}
-                  src={`${recipient.image}`}
-                  unoptimized
-                  priority={true}
-                />
+    <PushNotificationLayout>
+      <Layout>
+        <Modal
+          show={show}
+          onHide={handleClose}
+          animation={true}
+          contentClassName={styles.modalContent}
+        >
+          {recipient && (
+            <div className={`${styles.callContainer} card shadow`}>
+              <h4>{callStatus}</h4>
+              {recipient.image && (
+                <div className={`${styles.imageContainer} shadow-lg`}>
+                  <Image
+                    className={`${styles.imageCustom}`}
+                    alt="Picture of the user"
+                    width={80}
+                    height={80}
+                    src={`${recipient.image}`}
+                    unoptimized
+                    priority={true}
+                  />
+                </div>
+              )}
+              <h4>{recipient.name}</h4>
+              <span className="badge bg-dark">2-D Call</span>
+            </div>
+          )}
+        </Modal>
+        {data && (
+          <div className={`${styles.selectContainer2d} container-fluid`}>
+            <div className="row">
+              <div className={`${isSelected ? "col-lg-6" : "col-lg-12"}`}>
+                <div className={`${styles.selectContainer}`}>
+                  <Table>
+                    <Thead>
+                      <Tr>
+                        <Th title="Name" />
+                        <Th title="Email" />
+                        <Th title="Action" />
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {data.map((item, index) => (
+                        <Tr key={index}>
+                          <Td title={item.name} />
+                          <Td title={item.email} />
+                          <Td
+                            title={
+                              <Button
+                                title={
+                                  isSelected == item.id ? "Unselect" : "Select"
+                                }
+                                style={
+                                  isSelected == item.id
+                                    ? styles.actionBtnSelected
+                                    : styles.actionBtn
+                                }
+                                handleClick={() => {
+                                  setRecipient({
+                                    id: item.id,
+                                    name: item.name,
+                                    image: item.image,
+                                  });
+                                  handleAction(
+                                    item.id,
+                                    item.name,
+                                    item.image,
+                                    item.fcmToken
+                                  );
+                                }}
+                              />
+                            }
+                          />
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </div>
               </div>
-            )}
-            <h4>{recipient.name}</h4>
-            <span className="badge bg-dark">2-D Call</span>
+              {isSelected && (
+                <div className="col-lg-6">
+                  <div className="row">
+                    <div className="col-lg-6">
+                      <div
+                        className={`container-fuild ${styles.backgroundImage}`}
+                      >
+                        {backgroundImages.map((item, index) => (
+                          <Image
+                            key={index}
+                            className={`img-responsive ${
+                              isBgSelected?.backgroundImagesId == item.id &&
+                              styles.backgroundImageActive
+                            }`}
+                            alt="Background Image"
+                            width={180}
+                            height={100}
+                            src={`${item.imageUrl}`}
+                            unoptimized
+                            priority={true}
+                            onClick={() =>
+                              handleBackGroundSelect({
+                                backgroundImagesId: item.id,
+                                backgroundImageUrl: item.imageUrl,
+                              })
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="col-lg-6">
+                      <div
+                        className={`container-fuild ${styles.backgroundImage}`}
+                      >
+                        {models.map((item, index) => (
+                          <Image
+                            key={index}
+                            className={`img-responsive ${
+                              isModelSelected?.modelId == item.id &&
+                              styles.backgroundImageActive
+                            }`}
+                            alt="Background Image"
+                            width={120}
+                            height={180}
+                            src={`${item.imageUrl}`}
+                            unoptimized
+                            priority={true}
+                            onClick={() =>
+                              handleModelImageSelect({
+                                modelId: item.id,
+                                modelUrl: item.modelUrl,
+                              })
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {isBgSelected && isModelSelected && (
+                    <Button
+                      style={styles.createSessionBtn}
+                      title="Create Session"
+                      handleClick={handleCreateSession}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
-      </Modal>
-      {data && (
-        <div className={`${styles.selectContainer2d} container-fluid`}>
-          <div className="row">
-            <div className={`${isSelected ? "col-lg-6" : "col-lg-12"}`}>
-              <div className={`${styles.selectContainer}`}>
-                <Table>
-                  <Thead>
-                    <Tr>
-                      <Th title="Name" />
-                      <Th title="Email" />
-                      <Th title="Action" />
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {data.map((item, index) => (
-                      <Tr key={index}>
-                        <Td title={item.name} />
-                        <Td title={item.email} />
-                        <Td
-                          title={
-                            <Button
-                              title={
-                                isSelected == item.id ? "Unselect" : "Select"
-                              }
-                              style={
-                                isSelected == item.id
-                                  ? styles.actionBtnSelected
-                                  : styles.actionBtn
-                              }
-                              handleClick={() => {
-                                setRecipient({
-                                  id: item.id,
-                                  name: item.name,
-                                  image: item.image,
-                                });
-                                handleAction(item.id, item.name, item.image);
-                              }}
-                            />
-                          }
-                        />
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </div>
-            </div>
-            {isSelected && (
-              <div className="col-lg-6">
-                <div className="row">
-                  <div className="col-lg-6">
-                    <div
-                      className={`container-fuild ${styles.backgroundImage}`}
-                    >
-                      {backgroundImages.map((item, index) => (
-                        <Image
-                          key={index}
-                          className={`img-responsive ${
-                            isBgSelected?.backgroundImagesId == item.id &&
-                            styles.backgroundImageActive
-                          }`}
-                          alt="Background Image"
-                          width={180}
-                          height={100}
-                          src={`${item.imageUrl}`}
-                          unoptimized
-                          priority={true}
-                          onClick={() =>
-                            handleBackGroundSelect({
-                              backgroundImagesId: item.id,
-                              backgroundImageUrl: item.imageUrl,
-                            })
-                          }
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="col-lg-6">
-                    <div
-                      className={`container-fuild ${styles.backgroundImage}`}
-                    >
-                      {models.map((item, index) => (
-                        <Image
-                          key={index}
-                          className={`img-responsive ${
-                            isModelSelected?.modelId == item.id &&
-                            styles.backgroundImageActive
-                          }`}
-                          alt="Background Image"
-                          width={120}
-                          height={180}
-                          src={`${item.imageUrl}`}
-                          unoptimized
-                          priority={true}
-                          onClick={() =>
-                            handleModelImageSelect({
-                              modelId: item.id,
-                              modelUrl: item.modelUrl,
-                            })
-                          }
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                {isBgSelected && isModelSelected && (
-                  <Button
-                    style={styles.createSessionBtn}
-                    title="Create Session"
-                    handleClick={handleCreateSession}
-                  />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </Layout>
+      </Layout>
+    </PushNotificationLayout>
   );
 }
 
